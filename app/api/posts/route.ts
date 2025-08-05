@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     const posts = await getPosts();
+    console.log('Retrieved posts:', posts.length); // デバッグ用
     
     return NextResponse.json(posts);
   } catch (error) {
@@ -63,6 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     const post = await createPost(trimmedMessage);
+    console.log('Created post:', post); // デバッグ用
     
     return NextResponse.json(post, { status: 201 });
   } catch (error) {

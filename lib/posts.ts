@@ -41,34 +41,46 @@ export async function createPost(message: string): Promise<Post> {
 export async function getPosts(limit: number = 30): Promise<Post[]> {
   const redis = getRedisClient();
   
-  // 最新の投稿IDを取得（降順）
-  const postIds = await redis.zrange(POSTS_KEY, 0, limit - 1, { rev: true });
-  
-  if (!postIds || postIds.length === 0) {
-    return [];
-  }
-
-  const posts: Post[] = [];
-  
-  for (const id of postIds) {
-    const postData = await redis.get(`${POST_PREFIX}${id}`);
+  try {
+    // 最新の投稿IDを取得（降順） - Vercel KVの正しい構文
+    // @ts-ignore
+    const postIds = await redis.zrange(POSTS_KEY, -limit, -1);
     
-    if (postData) {
-      try {
-        const post = JSON.parse(postData as string) as Post;
-        posts.push(post);
-      } catch (error) {
-        console.error(`Failed to parse post ${id}:`, error);
-        // 無効な投稿をソートセットから削除
+    console.log('Post IDs from zrange:', postIds); // デバッグ用
+    
+    if (!postIds || postIds.length === 0) {
+      return [];
+    }
+
+    const posts: Post[] = [];
+    
+    // 降順にするため配列を逆転
+    const reversedIds = [...postIds].reverse();
+    
+    for (const id of reversedIds) {
+      const postData = await redis.get(`${POST_PREFIX}${id}`);
+      
+      if (postData) {
+        try {
+          const post = JSON.parse(postData as string) as Post;
+          posts.push(post);
+        } catch (error) {
+          console.error(`Failed to parse post ${id}:`, error);
+          // 無効な投稿をソートセットから削除
+          await redis.zrem(POSTS_KEY, String(id));
+        }
+      } else {
+        console.log(`Post not found: ${POST_PREFIX}${id}`); // デバッグ用
+        // 存在しない投稿をソートセットから削除
         await redis.zrem(POSTS_KEY, String(id));
       }
-    } else {
-      // 存在しない投稿をソートセットから削除
-      await redis.zrem(POSTS_KEY, String(id));
     }
-  }
 
-  return posts;
+    return posts;
+  } catch (error) {
+    console.error('Error in getPosts:', error);
+    return [];
+  }
 }
 
 // 期限切れの投稿IDをソートセットから削除（オプション）
