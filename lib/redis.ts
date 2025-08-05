@@ -8,9 +8,10 @@ export const mockRedis = {
   set: async (key: string, value: any, options?: any) => 'OK',
   del: async (key: string) => 1,
   expire: async (key: string, seconds: number) => 1,
-  zadd: async (key: string, score: number, member: string) => 1,
+  zadd: async (key: string, ...args: any[]) => 1,
   zrange: async (key: string, start: number, stop: number, options?: any) => [],
   zrem: async (key: string, member: string) => 1,
+  zremrangebyscore: async (key: string, min: number, max: number) => 0,
 };
 
 // 環境に応じて実際のRedisまたはモックを使用

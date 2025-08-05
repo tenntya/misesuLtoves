@@ -32,6 +32,7 @@ export async function createPost(message: string): Promise<Post> {
   await redis.expire(`${POST_PREFIX}${id}`, POST_EXPIRY_HOURS * 60 * 60);
   
   // 投稿IDをソートセットに追加（スコアはタイムスタンプ）
+  // @ts-ignore - Vercel KVのzaddは可変長引数を受け取る
   await redis.zadd(POSTS_KEY, now.getTime(), id);
 
   return post;
@@ -59,11 +60,11 @@ export async function getPosts(limit: number = 30): Promise<Post[]> {
       } catch (error) {
         console.error(`Failed to parse post ${id}:`, error);
         // 無効な投稿をソートセットから削除
-        await redis.zrem(POSTS_KEY, id);
+        await redis.zrem(POSTS_KEY, String(id));
       }
     } else {
       // 存在しない投稿をソートセットから削除
-      await redis.zrem(POSTS_KEY, id);
+      await redis.zrem(POSTS_KEY, String(id));
     }
   }
 
@@ -77,7 +78,7 @@ export async function cleanupExpiredPostIds(): Promise<number> {
   const expiredTime = now - (POST_EXPIRY_HOURS * 60 * 60 * 1000);
   
   // 期限切れの投稿IDを削除
-  const removed = await redis.zrem(POSTS_KEY, 0, expiredTime);
+  const removed = await redis.zremrangebyscore(POSTS_KEY, 0, expiredTime);
   
   return removed as number;
 }
