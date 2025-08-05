@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: '1日で消える掲示板',
-  description: 'シンプルな時限式掲示板',
+  title: 'Private Board',
+  description: 'Members Only',
 };
 
 export default function RootLayout({
