@@ -36,14 +36,20 @@ export default function LoginPage() {
         // 正しいパスワード：掲示板へ
         router.push('/');
       } else {
-        // 間違ったパスワード：ランダムな画像サイトへ
+        // 間違ったパスワード：ランダムな画像サイトへ（新しいタブで開く）
         const randomSite = randomImageSites[Math.floor(Math.random() * randomImageSites.length)];
-        window.location.href = randomSite;
+        window.open(randomSite, '_blank');
+        // 検索フィールドをクリア
+        setSearchQuery('');
+        setLoading(false);
       }
     } catch (error) {
-      // エラー時もランダムなサイトへ
+      // エラー時もランダムなサイトへ（新しいタブで開く）
       const randomSite = randomImageSites[Math.floor(Math.random() * randomImageSites.length)];
-      window.location.href = randomSite;
+      window.open(randomSite, '_blank');
+      // 検索フィールドをクリア
+      setSearchQuery('');
+      setLoading(false);
     }
   };
 
