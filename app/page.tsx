@@ -24,10 +24,10 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-2xl mx-auto p-4">
-        <header className="mb-8">
-          <div className="flex justify-end items-center mb-4">
+    <div className="min-h-screen bg-gray-50 overflow-hidden">
+      <div className="max-w-2xl mx-auto h-screen flex flex-col">
+        <header className="p-4 flex-shrink-0">
+          <div className="flex justify-end items-center">
             <button
               onClick={handleLogout}
               className="text-sm text-gray-600 hover:text-gray-800 underline"
@@ -37,8 +37,10 @@ export default function HomePage() {
           </div>
         </header>
 
-        <main>
-          <PostForm onPostCreated={handlePostCreated} />
+        <main className="flex-1 overflow-auto px-4 pb-4">
+          <div className="mb-4">
+            <PostForm onPostCreated={handlePostCreated} />
+          </div>
           <PostList key={refreshKey} />
         </main>
       </div>
