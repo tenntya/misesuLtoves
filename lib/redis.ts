@@ -10,6 +10,12 @@ export const mockRedis = {
   get: async (key: string) => mockStorage.get(key) || null,
   set: async (key: string, value: any, options?: any) => {
     mockStorage.set(key, value);
+    // EXオプションがある場合、タイマーで自動削除（モック実装）
+    if (options?.ex) {
+      setTimeout(() => {
+        mockStorage.delete(key);
+      }, options.ex * 1000);
+    }
     return 'OK';
   },
   del: async (key: string) => {

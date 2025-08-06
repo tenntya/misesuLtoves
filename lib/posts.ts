@@ -16,7 +16,8 @@ export async function createPost(message: string): Promise<Post> {
   const redis = getRedisClient();
   const id = nanoid();
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + POST_EXPIRY_HOURS * 60 * 60 * 1000);
+  const expiryHours = POST_EXPIRY_HOURS || 2;
+  const expiresAt = new Date(now.getTime() + expiryHours * 60 * 60 * 1000);
 
   const post: Post = {
     id,
@@ -25,11 +26,12 @@ export async function createPost(message: string): Promise<Post> {
     expires_at: expiresAt.toISOString(),
   };
 
-  // 投稿をRedisに保存
-  await redis.set(`${POST_PREFIX}${id}`, JSON.stringify(post));
-  
-  // 自動削除の設定（秒単位）
-  await redis.expire(`${POST_PREFIX}${id}`, POST_EXPIRY_HOURS * 60 * 60);
+  console.log('Creating post with expiry hours:', expiryHours); // デバッグ用
+  console.log('Expires at:', expiresAt.toISOString()); // デバッグ用
+
+  // 投稿をRedisに保存（EXオプションで有効期限を設定）
+  // @ts-ignore
+  await redis.set(`${POST_PREFIX}${id}`, JSON.stringify(post), { ex: expiryHours * 60 * 60 });
   
   // 投稿IDをソートセットに追加（スコアはタイムスタンプ）
   // @ts-ignore - Vercel KVのzaddは可変長引数を受け取る
@@ -63,16 +65,29 @@ export async function getPosts(limit: number = 30): Promise<Post[]> {
       if (postData) {
         try {
           const post = JSON.parse(postData as string) as Post;
-          posts.push(post);
+          
+          // 投稿の有効期限をチェック
+          const now = new Date();
+          const expiresAt = new Date(post.expires_at);
+          
+          if (expiresAt > now) {
+            // まだ有効な投稿のみ追加
+            posts.push(post);
+          } else {
+            console.log(`Post ${id} has expired at ${post.expires_at}`); // デバッグ用
+            // 期限切れの投稿をソートセットから削除
+            await redis.zrem(POSTS_KEY, String(id));
+          }
         } catch (error) {
           console.error(`Failed to parse post ${id}:`, error);
           // 無効な投稿をソートセットから削除
           await redis.zrem(POSTS_KEY, String(id));
         }
       } else {
-        console.log(`Post not found: ${POST_PREFIX}${id}`); // デバッグ用
-        // 存在しない投稿をソートセットから削除
-        await redis.zrem(POSTS_KEY, String(id));
+        // 投稿が見つからない場合でも、Vercel KVのメモリ制限による削除の可能性があるため
+        // ソートセットからの削除は行わない（コメントアウト）
+        console.log(`Post not found: ${POST_PREFIX}${id} (might be evicted due to memory limit)`); // デバッグ用
+        // await redis.zrem(POSTS_KEY, String(id));
       }
     }
 
