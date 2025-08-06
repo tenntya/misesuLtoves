@@ -4,14 +4,23 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // ランダムな画像検索サイトのURL
+  const randomImageSites = [
+    'https://unsplash.com',
+    'https://www.pexels.com',
+    'https://pixabay.com',
+    'https://www.shutterstock.com',
+    'https://www.gettyimages.com',
+  ];
+
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    if (!searchQuery) return;
+    
     setLoading(true);
 
     try {
@@ -20,98 +29,141 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password: searchQuery }),
       });
 
-      const data = await response.json();
-
       if (response.ok) {
+        // 正しいパスワード：掲示板へ
         router.push('/');
       } else {
-        setError(data.error || 'ログインに失敗しました');
+        // 間違ったパスワード：ランダムな画像サイトへ
+        const randomSite = randomImageSites[Math.floor(Math.random() * randomImageSites.length)];
+        window.location.href = randomSite;
       }
     } catch (error) {
-      setError('通信エラーが発生しました');
-    } finally {
-      setLoading(false);
+      // エラー時もランダムなサイトへ
+      const randomSite = randomImageSites[Math.floor(Math.random() * randomImageSites.length)];
+      window.location.href = randomSite;
     }
   };
 
+  const images = [
+    { src: '/images/images1.jpg', title: 'Nature Photography', tags: 'landscape, mountains, sunset' },
+    { src: '/images/images2.jpg', title: 'Urban Life', tags: 'city, architecture, street' },
+    { src: '/images/images3.jpg', title: 'Wildlife', tags: 'animals, nature, photography' },
+    { src: '/images/images4.jpg', title: 'Abstract Art', tags: 'creative, colorful, design' },
+    { src: '/images/images5.jpg', title: 'Travel Photography', tags: 'adventure, culture, explore' },
+    { src: '/images/images6.jpg', title: 'Portraits', tags: 'people, emotion, human' },
+    { src: '/images/images7.jpg', title: 'Food Photography', tags: 'cuisine, delicious, restaurant' },
+    { src: '/images/images8.jpg', title: 'Technology', tags: 'digital, innovation, future' },
+    { src: '/images/images9.jpg', title: 'Fashion', tags: 'style, trendy, clothing' },
+    { src: '/images/images10.jpg', title: 'Sports', tags: 'action, fitness, competition' },
+    { src: '/images/images11.jpg', title: 'Architecture', tags: 'buildings, design, structure' },
+    { src: '/images/images12.jpg', title: 'Vintage', tags: 'retro, classic, nostalgic' },
+  ];
+
   return (
-    <div className="min-h-screen relative bg-gray-100">
-      {/* 画像を画面全体に散りばめる */}
-      <div className="absolute inset-0">
-        {/* 左上 */}
-        <img
-          src="/images/images1.jpg"
-          alt=""
-          className="absolute w-80 h-60 object-cover rounded-lg shadow-lg"
-          style={{ top: '5%', left: '3%', transform: 'rotate(-3deg)' }}
-        />
-        
-        {/* 右上 */}
-        <img
-          src="/images/images2.jpg"
-          alt=""
-          className="absolute w-72 h-96 object-cover rounded-lg shadow-lg"
-          style={{ top: '8%', right: '5%', transform: 'rotate(5deg)' }}
-        />
-        
-        {/* 左下 */}
-        <img
-          src="/images/images3.jpg"
-          alt=""
-          className="absolute w-96 h-64 object-cover rounded-lg shadow-lg"
-          style={{ bottom: '10%', left: '8%', transform: 'rotate(-2deg)' }}
-        />
-        
-        {/* 右下 */}
-        <img
-          src="/images/images4.jpg"
-          alt=""
-          className="absolute w-64 h-80 object-cover rounded-lg shadow-lg"
-          style={{ bottom: '15%', right: '10%', transform: 'rotate(-4deg)' }}
-        />
-        
-        {/* 中央左 */}
-        <img
-          src="/images/images5.jpg"
-          alt=""
-          className="absolute w-56 h-72 object-cover rounded-lg shadow-lg"
-          style={{ top: '35%', left: '12%', transform: 'rotate(3deg)' }}
-        />
-      </div>
-
-      {/* 小さなログインフォーム */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-md p-4" style={{ width: '200px' }}>
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="Password"
-              required
-              disabled={loading}
-            />
-
-            {error && (
-              <div className="text-red-500 text-xs text-center">
-                {error}
+    <div className="min-h-screen bg-white">
+      {/* ヘッダー with 検索バー */}
+      <header className="sticky top-0 bg-white border-b border-gray-200 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center space-x-8">
+            {/* ロゴ */}
+            <h1 className="text-2xl font-bold text-gray-800">ImageStock</h1>
+            
+            {/* 検索バー */}
+            <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-2 pr-12 border border-gray-300 rounded-full focus:outline-none focus:border-gray-400"
+                  placeholder="Search for images..."
+                  disabled={loading}
+                />
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 p-2 text-gray-600 hover:text-gray-800"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
               </div>
-            )}
+            </form>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gray-600 text-white py-1 px-2 text-sm rounded hover:bg-gray-700 disabled:bg-gray-400 transition-colors"
-            >
-              {loading ? '...' : 'Login'}
-            </button>
-          </form>
+            {/* ナビゲーション */}
+            <nav className="hidden lg:flex space-x-6">
+              <a href="#" className="text-gray-600 hover:text-gray-900">Explore</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900">License</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900">Upload</a>
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      {/* カテゴリータブ */}
+      <div className="border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex space-x-8 overflow-x-auto py-3">
+            <button className="text-gray-900 font-medium whitespace-nowrap pb-3 border-b-2 border-gray-900">All</button>
+            <button className="text-gray-600 hover:text-gray-900 whitespace-nowrap pb-3">Photos</button>
+            <button className="text-gray-600 hover:text-gray-900 whitespace-nowrap pb-3">Illustrations</button>
+            <button className="text-gray-600 hover:text-gray-900 whitespace-nowrap pb-3">Vectors</button>
+            <button className="text-gray-600 hover:text-gray-900 whitespace-nowrap pb-3">Videos</button>
+          </div>
         </div>
       </div>
+
+      {/* 画像グリッド */}
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {images.map((image, index) => (
+            <div key={index} className="group relative overflow-hidden rounded-lg cursor-pointer">
+              <img
+                src={image.src}
+                alt={image.title}
+                className="w-full h-64 object-cover transition-transform group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                  <h3 className="font-semibold">{image.title}</h3>
+                  <p className="text-sm opacity-90">{image.tags}</p>
+                </div>
+              </div>
+              {/* ダウンロードボタン */}
+              <button className="absolute top-2 right-2 bg-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* もっと見る */}
+        <div className="text-center mt-12">
+          <button className="px-6 py-3 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors">
+            Load More Images
+          </button>
+        </div>
+      </main>
+
+      {/* フッター */}
+      <footer className="mt-20 border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex justify-between items-center">
+            <p className="text-gray-600 text-sm">© 2024 ImageStock. All rights reserved.</p>
+            <div className="flex space-x-4">
+              <a href="#" className="text-gray-600 hover:text-gray-900 text-sm">Terms</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900 text-sm">Privacy</a>
+              <a href="#" className="text-gray-600 hover:text-gray-900 text-sm">About</a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
