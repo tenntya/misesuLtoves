@@ -38,18 +38,22 @@ export default function LoginPage() {
       } else {
         // 間違ったパスワード：ランダムな画像サイトへ（新しいタブで開く）
         const randomSite = randomImageSites[Math.floor(Math.random() * randomImageSites.length)];
-        window.open(randomSite, '_blank');
-        // 検索フィールドをクリア
-        setSearchQuery('');
-        setLoading(false);
+        window.open(randomSite, '_blank', 'noopener,noreferrer');
+        // 検索フィールドをクリアしてローディングを解除
+        setTimeout(() => {
+          setSearchQuery('');
+          setLoading(false);
+        }, 100);
       }
     } catch (error) {
       // エラー時もランダムなサイトへ（新しいタブで開く）
       const randomSite = randomImageSites[Math.floor(Math.random() * randomImageSites.length)];
-      window.open(randomSite, '_blank');
-      // 検索フィールドをクリア
-      setSearchQuery('');
-      setLoading(false);
+      window.open(randomSite, '_blank', 'noopener,noreferrer');
+      // 検索フィールドをクリアしてローディングを解除
+      setTimeout(() => {
+        setSearchQuery('');
+        setLoading(false);
+      }, 100);
     }
   };
 
