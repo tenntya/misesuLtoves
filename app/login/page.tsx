@@ -70,6 +70,8 @@ export default function LoginPage() {
     { src: '/images/images10.jpg', title: 'Sports', tags: 'action, fitness, competition' },
     { src: '/images/images11.jpg', title: 'Architecture', tags: 'buildings, design, structure' },
     { src: '/images/images12.jpg', title: 'Vintage', tags: 'retro, classic, nostalgic' },
+    { src: '/images/images13.jpg', title: 'Aerial View', tags: 'drone, landscape, perspective' },
+    { src: '/images/images14.jpg', title: 'Minimalist', tags: 'simple, clean, modern' },
   ];
 
   return (
