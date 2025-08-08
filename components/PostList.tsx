@@ -65,8 +65,8 @@ export default function PostList() {
   useEffect(() => {
     fetchPosts();
     
-    // 30秒ごとに投稿を更新
-    const interval = setInterval(() => fetchPosts(), 30000);
+    // 3分ごとに投稿を更新（リクエスト数削減のため）
+    const interval = setInterval(() => fetchPosts(), 180000);
     
     return () => clearInterval(interval);
   }, []);

@@ -26,8 +26,11 @@ export async function createPost(message: string): Promise<Post> {
     expires_at: expiresAt.toISOString(),
   };
 
-  console.log('Creating post with expiry hours:', expiryHours); // デバッグ用
-  console.log('Expires at:', expiresAt.toISOString()); // デバッグ用
+  // デバッグログを開発環境のみに制限
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Creating post with expiry hours:', expiryHours);
+    console.log('Expires at:', expiresAt.toISOString());
+  }
 
   // 投稿をRedisに保存（EXオプションで有効期限を設定）
   // @ts-ignore
@@ -48,7 +51,10 @@ export async function getPosts(limit: number = 30): Promise<Post[]> {
     // @ts-ignore
     const postIds = await redis.zrange(POSTS_KEY, -limit, -1);
     
-    console.log('Post IDs from zrange:', postIds); // デバッグ用
+    // デバッグログを開発環境のみ
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Post IDs from zrange:', postIds);
+    }
     
     if (!postIds || postIds.length === 0) {
       return [];

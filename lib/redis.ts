@@ -76,11 +76,14 @@ export const mockRedis = {
 // 環境に応じて実際のRedisまたはモックを使用
 export function getRedisClient() {
   if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-    console.log('Using Vercel KV'); // デバッグ用
+    // デバッグログを本番環境では無効化
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Using Vercel KV');
+    }
     return redis;
   }
-  console.warn('Vercel KV is not configured. Using mock Redis.');
-  console.log('KV_REST_API_URL:', process.env.KV_REST_API_URL ? 'Set' : 'Not set'); // デバッグ用
-  console.log('KV_REST_API_TOKEN:', process.env.KV_REST_API_TOKEN ? 'Set' : 'Not set'); // デバッグ用
+  if (process.env.NODE_ENV === 'development') {
+    console.warn('Vercel KV is not configured. Using mock Redis.');
+  }
   return mockRedis;
 }
